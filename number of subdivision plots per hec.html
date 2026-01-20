@@ -1,0 +1,1049 @@
+NUMBER OF SUBDIVISION PLOTS PER HECTARE
+
+# Square Meter Plot Calculator
+
+I'll create a calculator that accepts plot size in square meters, automatically converts to hectares for calculation, and distributes the remaining area equally after the appropriate deduction (20% for ≤4ha, 30% for >4ha).
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Square Meter Plot Calculator</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f9fc;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 850px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            padding: 30px;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 15px;
+        }
+        
+        .description {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 30px;
+            font-size: 1.05rem;
+        }
+        
+        .calculator {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        
+        @media (max-width: 768px) {
+            .calculator {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .input-section, .results-section {
+            padding: 20px;
+            background-color: #f8fafc;
+            border-radius: 10px;
+            border: 1px solid #e8edf2;
+        }
+        
+        .input-group {
+            margin-bottom: 25px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        input[type="number"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #dce4ec;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="number"]:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+        
+        .unit-selector {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .unit-option {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #dce4ec;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .unit-option.active {
+            background-color: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+        
+        .unit-option:hover {
+            border-color: #3498db;
+        }
+        
+        .input-hint {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+        }
+        
+        .note {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            font-style: italic;
+        }
+        
+        .conversion-display {
+            font-size: 0.9rem;
+            background-color: #e8f4fc;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-top: 8px;
+            border-left: 3px solid #3498db;
+        }
+        
+        .deduction-info {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #e8f4fc;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .deduction-info h4 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        
+        .deduction-rule {
+            padding: 10px;
+            background-color: white;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            border-left: 3px solid #2ecc71;
+        }
+        
+        .deduction-rule.warning {
+            border-left-color: #e74c3c;
+        }
+        
+        .deduction-rule p {
+            margin: 5px 0;
+        }
+        
+        .rule-title {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        #calculateBtn {
+            background-color: #2ecc71;
+            color: white;
+        }
+        
+        #calculateBtn:hover {
+            background-color: #27ae60;
+        }
+        
+        #resetBtn {
+            background-color: #ecf0f1;
+            color: #34495e;
+        }
+        
+        #resetBtn:hover {
+            background-color: #d5dbdb;
+        }
+        
+        .results-section h3 {
+            color: #2c3e50;
+            margin-top: 0;
+            border-bottom: 1px dashed #dce4ec;
+            padding-bottom: 10px;
+        }
+        
+        .result-item {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: white;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .result-item.warning {
+            border-left-color: #e74c3c;
+        }
+        
+        .result-item.success {
+            border-left-color: #2ecc71;
+        }
+        
+        .result-title {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        
+        .result-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+        
+        .result-details {
+            margin-top: 10px;
+            font-size: 0.95rem;
+            color: #7f8c8d;
+        }
+        
+        .result-unit {
+            font-size: 1rem;
+            color: #3498db;
+        }
+        
+        .dual-unit {
+            display: flex;
+            gap: 15px;
+            margin-top: 5px;
+        }
+        
+        .unit-display {
+            font-size: 0.95rem;
+            color: #7f8c8d;
+        }
+        
+        .highlight {
+            color: #e74c3c;
+            font-weight: 600;
+        }
+        
+        .explanation {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f0f7ff;
+            border-radius: 10px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .explanation h4 {
+            color: #2c3e50;
+            margin-top: 0;
+        }
+        
+        .explanation p {
+            margin-bottom: 10px;
+        }
+        
+        .formula {
+            font-family: 'Courier New', monospace;
+            background-color: #2c3e50;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        
+        .common-sizes {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .common-sizes h5 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        
+        .size-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        
+        .size-option {
+            padding: 6px 12px;
+            background-color: #ecf0f1;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .size-option:hover {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .visualization {
+            margin-top: 25px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .visualization h4 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        
+        .plot-visual {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 15px;
+            justify-content: center;
+        }
+        
+        .plot-box {
+            width: 40px;
+            height: 40px;
+            background-color: #3498db;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        .utility-box {
+            background-color: #95a5a6;
+        }
+        
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 15px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem;
+        }
+        
+        .legend-color {
+            width: 15px;
+            height: 15px;
+            margin-right: 5px;
+            border-radius: 3px;
+        }
+        
+        .deduction-display {
+            display: inline-block;
+            padding: 3px 8px;
+            background-color: #3498db;
+            color: white;
+            border-radius: 4px;
+            font-weight: 600;
+            margin: 0 5px;
+        }
+        
+        .deduction-display.high {
+            background-color: #e74c3c;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #95a5a6;
+            font-size: 0.9rem;
+            padding-top: 20px;
+            border-top: 1px solid #ecf0f1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Square Meter Plot Calculator</h1>
+        <p class="description">Calculate number of equal plots based on plot size in square meters</p>
+        
+        <div class="calculator">
+            <div class="input-section">
+                <div class="input-group">
+                    <label for="grossArea">Gross Land Area</label>
+                    <input type="number" id="grossArea" min="0.1" step="0.1" placeholder="Enter land area">
+                    <div class="unit-selector">
+                        <div class="unit-option active" data-unit="hectares">Hectares (ha)</div>
+                        <div class="unit-option" data-unit="acres">Acres</div>
+                        <div class="unit-option" data-unit="squareMeters">Square Meters (m²)</div>
+                    </div>
+                    <div class="input-hint">
+                        <span class="note">Land area will be converted to hectares for calculation</span>
+                        <span id="areaConversion" class="note"></span>
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label for="plotSize">Plot Size</label>
+                    <input type="number" id="plotSize" min="1" step="1" placeholder="Enter plot size">
+                    <div class="unit-selector">
+                        <div class="unit-option" data-unit-plot="hectares">Hectares (ha)</div>
+                        <div class="unit-option" data-unit-plot="acres">Acres</div>
+                        <div class="unit-option active" data-unit-plot="squareMeters">Square Meters (m²)</div>
+                    </div>
+                    <div class="conversion-display" id="plotSizeConversion">
+                        Enter plot size to see conversion
+                    </div>
+                </div>
+                
+                <div class="common-sizes">
+                    <h5>Common Plot Sizes (m²)</h5>
+                    <div class="size-options">
+                        <div class="size-option" data-size="100">100 m²</div>
+                        <div class="size-option" data-size="200">200 m²</div>
+                        <div class="size-option" data-size="300">300 m²</div>
+                        <div class="size-option" data-size="500">500 m²</div>
+                        <div class="size-option" data-size="1000">1,000 m²</div>
+                        <div class="size-option" data-size="2000">2,000 m²</div>
+                        <div class="size-option" data-size="4046">1 Acre</div>
+                    </div>
+                </div>
+                
+                <div class="deduction-info">
+                    <h4>Utility Deduction Rules</h4>
+                    <div class="deduction-rule" id="rule20">
+                        <p class="rule-title">Small Land (≤ 4 hectares)</p>
+                        <p>20% deducted for utilities and infrastructure</p>
+                    </div>
+                    <div class="deduction-rule warning" id="rule30">
+                        <p class="rule-title">Large Land (> 4 hectares)</p>
+                        <p>30% deducted for utilities and infrastructure</p>
+                    </div>
+                </div>
+                
+                <div class="button-group">
+                    <button id="calculateBtn">Calculate Number of Plots</button>
+                    <button id="resetBtn">Reset</button>
+                </div>
+            </div>
+            
+            <div class="results-section">
+                <h3>Calculation Results</h3>
+                
+                <div class="result-item">
+                    <div class="result-title">Gross Land Area</div>
+                    <div class="result-value" id="grossAreaResult">--</div>
+                    <div class="dual-unit">
+                        <div class="unit-display" id="grossAreaHa">-- hectares</div>
+                        <div class="unit-display" id="grossAreaM2">-- m²</div>
+                    </div>
+                </div>
+                
+                <div class="result-item" id="deductionResultItem">
+                    <div class="result-title">Utility Deduction Applied</div>
+                    <div class="result-value" id="deductionPercent">--%</div>
+                    <div class="result-details" id="deductionDetails"></div>
+                </div>
+                
+                <div class="result-item">
+                    <div class="result-title">Utilities & Infrastructure</div>
+                    <div class="result-value" id="utilityAreaResult">--</div>
+                    <div class="dual-unit">
+                        <div class="unit-display" id="utilityAreaHa">-- hectares</div>
+                        <div class="unit-display" id="utilityAreaM2">-- m²</div>
+                    </div>
+                </div>
+                
+                <div class="result-item success">
+                    <div class="result-title">Net Area for Plots</div>
+                    <div class="result-value" id="netAreaResult">--</div>
+                    <div class="dual-unit">
+                        <div class="unit-display" id="netAreaHa">-- hectares</div>
+                        <div class="unit-display" id="netAreaM2">-- m²</div>
+                    </div>
+                </div>
+                
+                <div class="result-item">
+                    <div class="result-title">Individual Plot Size</div>
+                    <div class="result-value" id="plotSizeResult">--</div>
+                    <div class="dual-unit">
+                        <div class="unit-display" id="plotSizeHa">-- hectares</div>
+                        <div class="unit-display" id="plotSizeM2">-- m²</div>
+                    </div>
+                </div>
+                
+                <div class="result-item">
+                    <div class="result-title">Number of Plots</div>
+                    <div class="result-value" id="plotCountResult">-- <span class="result-unit">plots</span></div>
+                    <div class="result-details" id="plotDetails">Calculated based on provided plot size</div>
+                </div>
+                
+                <div class="result-item">
+                    <div class="result-title">Total Plot Area</div>
+                    <div class="result-value" id="totalPlotAreaResult">--</div>
+                    <div class="dual-unit">
+                        <div class="unit-display" id="totalPlotAreaHa">-- hectares</div>
+                        <div class="unit-display" id="totalPlotAreaM2">-- m²</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="visualization" id="plotVisualization" style="display: none;">
+            <h4>Land Distribution Visualization</h4>
+            <div class="plot-visual" id="plotContainer">
+                <!-- Plot boxes will be generated here -->
+            </div>
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #95a5a6;"></div>
+                    <span>Utilities</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #3498db;"></div>
+                    <span>Equal Plots</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="explanation">
+            <h4>How the Calculator Works</h4>
+            
+            <p><strong>Step 1: Unit Conversion</strong><br>
+            All inputs are converted to hectares for calculation:<br>
+            • 1 hectare = 10,000 square meters = 2.471 acres</p>
+            
+            <p><strong>Step 2: Dynamic Utility Deduction</strong></p>
+            <div class="formula">
+                IF Gross Area ≤ 4 hectares:<br>
+                &nbsp;&nbsp;Utility Deduction = 20% of Gross Area<br><br>
+                
+                IF Gross Area > 4 hectares:<br>
+                &nbsp;&nbsp;Utility Deduction = 30% of Gross Area<br><br>
+                
+                Net Area = Gross Area - Utility Deduction
+            </div>
+            
+            <p><strong>Step 3: Calculate Number of Plots</strong></p>
+            <div class="formula">
+                Number of Plots = Floor(Net Area ÷ Plot Size in hectares)<br>
+                Adjusted Net Area = Number of Plots × Plot Size<br>
+                (Ensures equal distribution with no leftover)
+            </div>
+            
+            <p><strong>Example Calculation:</strong></p>
+            <p>• Gross Area: 5 hectares = 50,000 m²<br>
+            • Plot Size: 500 m² = 0.05 hectares<br>
+            • Utility Deduction: 30% (1.5 hectares) = 15,000 m²<br>
+            • Net Area: 3.5 hectares = 35,000 m²<br>
+            • Number of Plots: Floor(3.5 ÷ 0.05) = 70 plots<br>
+            • Each Plot: 500 m² exactly<br>
+            • Total Plot Area: 70 × 500 = 35,000 m² = 3.5 hectares</p>
+        </div>
+        
+        <footer>
+            <p>Square Meter Plot Calculator | Converts all units to hectares for calculation</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Constants for conversion
+            const HECTARES_TO_SQM = 10000;
+            const ACRES_TO_HECTARES = 0.404686;
+            const SQM_TO_HECTARES = 0.0001;
+            
+            // DOM Elements
+            const grossAreaInput = document.getElementById('grossArea');
+            const plotSizeInput = document.getElementById('plotSize');
+            const calculateBtn = document.getElementById('calculateBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const plotVisualization = document.getElementById('plotVisualization');
+            const plotContainer = document.getElementById('plotContainer');
+            const areaConversion = document.getElementById('areaConversion');
+            const plotSizeConversion = document.getElementById('plotSizeConversion');
+            const rule20 = document.getElementById('rule20');
+            const rule30 = document.getElementById('rule30');
+            
+            // Unit selectors
+            const landUnitOptions = document.querySelectorAll('.unit-option[data-unit]');
+            const plotUnitOptions = document.querySelectorAll('.unit-option[data-unit-plot]');
+            
+            // Common plot size buttons
+            const sizeOptions = document.querySelectorAll('.size-option');
+            
+            // Result elements
+            const grossAreaResult = document.getElementById('grossAreaResult');
+            const grossAreaHa = document.getElementById('grossAreaHa');
+            const grossAreaM2 = document.getElementById('grossAreaM2');
+            const deductionPercent = document.getElementById('deductionPercent');
+            const deductionDetails = document.getElementById('deductionDetails');
+            const utilityAreaResult = document.getElementById('utilityAreaResult');
+            const utilityAreaHa = document.getElementById('utilityAreaHa');
+            const utilityAreaM2 = document.getElementById('utilityAreaM2');
+            const netAreaResult = document.getElementById('netAreaResult');
+            const netAreaHa = document.getElementById('netAreaHa');
+            const netAreaM2 = document.getElementById('netAreaM2');
+            const plotSizeResult = document.getElementById('plotSizeResult');
+            const plotSizeHa = document.getElementById('plotSizeHa');
+            const plotSizeM2 = document.getElementById('plotSizeM2');
+            const plotCountResult = document.getElementById('plotCountResult');
+            const plotDetails = document.getElementById('plotDetails');
+            const totalPlotAreaResult = document.getElementById('totalPlotAreaResult');
+            const totalPlotAreaHa = document.getElementById('totalPlotAreaHa');
+            const totalPlotAreaM2 = document.getElementById('totalPlotAreaM2');
+            const deductionResultItem = document.getElementById('deductionResultItem');
+            
+            // Current units
+            let currentLandUnit = 'hectares';
+            let currentPlotUnit = 'squareMeters';
+            
+            // Initialize unit selectors
+            function initUnitSelectors() {
+                // Land area unit selector
+                landUnitOptions.forEach(option => {
+                    option.addEventListener('click', function() {
+                        landUnitOptions.forEach(opt => opt.classList.remove('active'));
+                        this.classList.add('active');
+                        currentLandUnit = this.dataset.unit;
+                        updateLandAreaConversion();
+                    });
+                });
+                
+                // Plot size unit selector
+                plotUnitOptions.forEach(option => {
+                    option.addEventListener('click', function() {
+                        plotUnitOptions.forEach(opt => opt.classList.remove('active'));
+                        this.classList.add('active');
+                        currentPlotUnit = this.dataset.unitPlot;
+                        updatePlotSizeConversion();
+                    });
+                });
+                
+                // Common plot size buttons
+                sizeOptions.forEach(option => {
+                    option.addEventListener('click', function() {
+                        const size = this.dataset.size;
+                        plotSizeInput.value = size;
+                        currentPlotUnit = 'squareMeters';
+                        plotUnitOptions.forEach(opt => {
+                            opt.classList.remove('active');
+                            if (opt.dataset.unitPlot === 'squareMeters') {
+                                opt.classList.add('active');
+                            }
+                        });
+                        updatePlotSizeConversion();
+                    });
+                });
+            }
+            
+            // Update land area conversion display
+            function updateLandAreaConversion() {
+                const value = parseFloat(grossAreaInput.value);
+                
+                if (isNaN(value) || value <= 0) {
+                    areaConversion.textContent = '';
+                    return;
+                }
+                
+                let hectares, acres, sqm;
+                
+                switch (currentLandUnit) {
+                    case 'hectares':
+                        hectares = value;
+                        acres = value / ACRES_TO_HECTARES;
+                        sqm = value * HECTARES_TO_SQM;
+                        break;
+                    case 'acres':
+                        acres = value;
+                        hectares = value * ACRES_TO_HECTARES;
+                        sqm = hectares * HECTARES_TO_SQM;
+                        break;
+                    case 'squareMeters':
+                        sqm = value;
+                        hectares = value * SQM_TO_HECTARES;
+                        acres = hectares / ACRES_TO_HECTARES;
+                        break;
+                }
+                
+                areaConversion.textContent = `${hectares.toFixed(3)} ha | ${acres.toFixed(3)} acres | ${sqm.toFixed(0)} m²`;
+                
+                // Highlight deduction rule
+                if (hectares <= 4) {
+                    rule20.style.borderLeftColor = '#2ecc71';
+                    rule20.style.backgroundColor = '#e8f6ef';
+                    rule30.style.borderLeftColor = '#95a5a6';
+                    rule30.style.backgroundColor = 'white';
+                } else {
+                    rule20.style.borderLeftColor = '#95a5a6';
+                    rule20.style.backgroundColor = 'white';
+                    rule30.style.borderLeftColor = '#e74c3c';
+                    rule30.style.backgroundColor = '#fef5f5';
+                }
+            }
+            
+            // Update plot size conversion display
+            function updatePlotSizeConversion() {
+                const value = parseFloat(plotSizeInput.value);
+                
+                if (isNaN(value) || value <= 0) {
+                    plotSizeConversion.textContent = 'Enter plot size to see conversion';
+                    return;
+                }
+                
+                let hectares, acres, sqm;
+                
+                switch (currentPlotUnit) {
+                    case 'hectares':
+                        hectares = value;
+                        acres = value / ACRES_TO_HECTARES;
+                        sqm = value * HECTARES_TO_SQM;
+                        break;
+                    case 'acres':
+                        acres = value;
+                        hectares = value * ACRES_TO_HECTARES;
+                        sqm = hectares * HECTARES_TO_SQM;
+                        break;
+                    case 'squareMeters':
+                        sqm = value;
+                        hectares = value * SQM_TO_HECTARES;
+                        acres = hectares / ACRES_TO_HECTARES;
+                        break;
+                }
+                
+                plotSizeConversion.textContent = 
+                    `${hectares.toFixed(4)} ha | ${acres.toFixed(4)} acres | ${sqm.toFixed(0)} m²`;
+            }
+            
+            // Convert input value to hectares
+            function convertToHectares(value, unit) {
+                switch (unit) {
+                    case 'hectares':
+                        return value;
+                    case 'acres':
+                        return value * ACRES_TO_HECTARES;
+                    case 'squareMeters':
+                        return value * SQM_TO_HECTARES;
+                    default:
+                        return value;
+                }
+            }
+            
+            // Format area for display
+            function formatArea(hectares) {
+                const sqm = hectares * HECTARES_TO_SQM;
+                const acres = hectares / ACRES_TO_HECTARES;
+                
+                return {
+                    hectares: hectares.toFixed(3),
+                    sqm: sqm.toFixed(0),
+                    acres: acres.toFixed(3)
+                };
+            }
+            
+            // Calculate function
+            function calculatePlots() {
+                // Get and convert gross area to hectares
+                const grossAreaValue = parseFloat(grossAreaInput.value);
+                const plotSizeValue = parseFloat(plotSizeInput.value);
+                
+                // Validate inputs
+                if (isNaN(grossAreaValue) || grossAreaValue <= 0) {
+                    alert('Please enter a valid gross land area greater than 0.');
+                    grossAreaInput.focus();
+                    return;
+                }
+                
+                if (isNaN(plotSizeValue) || plotSizeValue <= 0) {
+                    alert('Please enter a valid plot size greater than 0.');
+                    plotSizeInput.focus();
+                    return;
+                }
+                
+                // Convert to hectares
+                const grossAreaHectares = convertToHectares(grossAreaValue, currentLandUnit);
+                const plotSizeHectares = convertToHectares(plotSizeValue, currentPlotUnit);
+                
+                // Determine deduction percentage
+                let deductionPercentValue, utilityAreaHectares;
+                
+                if (grossAreaHectares <= 4) {
+                    deductionPercentValue = 20;
+                    deductionResultItem.classList.remove('warning');
+                    deductionResultItem.classList.add('success');
+                } else {
+                    deductionPercentValue = 30;
+                    deductionResultItem.classList.remove('success');
+                    deductionResultItem.classList.add('warning');
+                }
+                
+                utilityAreaHectares = grossAreaHectares * (deductionPercentValue / 100);
+                const netAreaHectares = grossAreaHectares - utilityAreaHectares;
+                
+                // Calculate number of plots (round down to whole number)
+                let numPlots = Math.floor(netAreaHectares / plotSizeHectares);
+                
+                if (numPlots === 0) {
+                    alert('The plot size is too large for the available area. Please enter a smaller plot size.');
+                    plotSizeInput.focus();
+                    return;
+                }
+                
+                // Recalculate for equal distribution (slightly adjust plot size if needed)
+                const adjustedPlotSizeHectares = netAreaHectares / numPlots;
+                const totalPlotAreaHectares = adjustedPlotSizeHectares * numPlots;
+                
+                // Format results for display
+                const grossAreaFormatted = formatArea(grossAreaHectares);
+                const utilityAreaFormatted = formatArea(utilityAreaHectares);
+                const netAreaFormatted = formatArea(netAreaHectares);
+                const plotSizeFormatted = formatArea(adjustedPlotSizeHectares);
+                const totalPlotAreaFormatted = formatArea(totalPlotAreaHectares);
+                
+                // Update results
+                grossAreaResult.textContent = `${grossAreaValue.toFixed(2)} ${currentLandUnit}`;
+                grossAreaHa.textContent = `${grossAreaFormatted.hectares} hectares`;
+                grossAreaM2.textContent = `${grossAreaFormatted.sqm} m²`;
+                
+                deductionPercent.innerHTML = `<span class="deduction-display ${grossAreaHectares > 4 ? 'high' : ''}">${deductionPercentValue}%</span>`;
+                deductionDetails.textContent = grossAreaHectares > 4 
+                    ? 'Higher deduction for larger land (needs more infrastructure)' 
+                    : 'Standard deduction for smaller land';
+                
+                utilityAreaResult.textContent = `${utilityAreaFormatted.hectares}`;
+                utilityAreaHa.textContent = `${utilityAreaFormatted.hectares} hectares`;
+                utilityAreaM2.textContent = `${utilityAreaFormatted.sqm} m²`;
+                
+                netAreaResult.textContent = `${netAreaFormatted.hectares}`;
+                netAreaHa.textContent = `${netAreaFormatted.hectares} hectares`;
+                netAreaM2.textContent = `${netAreaFormatted.sqm} m²`;
+                
+                plotSizeResult.textContent = `${plotSizeValue.toFixed(0)} ${currentPlotUnit}`;
+                plotSizeHa.textContent = `${plotSizeFormatted.hectares} hectares`;
+                plotSizeM2.textContent = `${plotSizeFormatted.sqm} m²`;
+                
+                plotCountResult.textContent = `${numPlots} plots`;
+                plotDetails.textContent = `Each plot: ${plotSizeFormatted.sqm} m² (${plotSizeFormatted.hectares} ha)`;
+                
+                totalPlotAreaResult.textContent = `${totalPlotAreaFormatted.hectares}`;
+                totalPlotAreaHa.textContent = `${totalPlotAreaFormatted.hectares} hectares`;
+                totalPlotAreaM2.textContent = `${totalPlotAreaFormatted.sqm} m²`;
+                
+                // Generate visualization
+                generateVisualization(grossAreaHectares, utilityAreaHectares, numPlots, deductionPercentValue);
+                plotVisualization.style.display = 'block';
+            }
+            
+            // Generate visualization
+            function generateVisualization(grossArea, utilityArea, numPlots, deductionPercent) {
+                plotContainer.innerHTML = '';
+                
+                const totalBoxes = Math.min(50, Math.max(10, numPlots));
+                const utilityBoxes = Math.max(1, Math.round((utilityArea / grossArea) * totalBoxes));
+                const plotBoxes = totalBoxes - utilityBoxes;
+                
+                // Add utility boxes
+                for (let i = 0; i < utilityBoxes; i++) {
+                    const box = document.createElement('div');
+                    box.className = 'plot-box utility-box';
+                    box.textContent = 'U';
+                    box.title = `Utilities: ${deductionPercent}% of land`;
+                    plotContainer.appendChild(box);
+                }
+                
+                // Add plot boxes
+                const plotsPerBox = Math.ceil(numPlots / plotBoxes);
+                for (let i = 0; i < plotBoxes; i++) {
+                    const box = document.createElement('div');
+                    box.className = 'plot-box';
+                    
+                    const startPlot = i * plotsPerBox + 1;
+                    const endPlot = Math.min((i + 1) * plotsPerBox, numPlots);
+                    
+                    if (startPlot === endPlot) {
+                        box.textContent = startPlot;
+                    } else {
+                        box.textContent = `${startPlot}-${endPlot}`;
+                    }
+                    
+                    box.title = `Plots ${startPlot} to ${endPlot}`;
+                    plotContainer.appendChild(box);
+                }
+            }
+            
+            // Reset function
+            function resetCalculator() {
+                grossAreaInput.value = '';
+                plotSizeInput.value = '';
+                areaConversion.textContent = '';
+                plotSizeConversion.textContent = 'Enter plot size to see conversion';
+                
+                // Reset units to default
+                currentLandUnit = 'hectares';
+                currentPlotUnit = 'squareMeters';
+                landUnitOptions.forEach(opt => {
+                    opt.classList.remove('active');
+                    if (opt.dataset.unit === 'hectares') opt.classList.add('active');
+                });
+                plotUnitOptions.forEach(opt => {
+                    opt.classList.remove('active');
+                    if (opt.dataset.unitPlot === 'squareMeters') opt.classList.add('active');
+                });
+                
+                // Reset results
+                grossAreaResult.textContent = '--';
+                grossAreaHa.textContent = '-- hectares';
+                grossAreaM2.textContent = '-- m²';
+                deductionPercent.innerHTML = '--%';
+                deductionDetails.textContent = '';
+                utilityAreaResult.textContent = '--';
+                utilityAreaHa.textContent = '-- hectares';
+                utilityAreaM2.textContent = '-- m²';
+                netAreaResult.textContent = '--';
+                netAreaHa.textContent = '-- hectares';
+                netAreaM2.textContent = '-- m²';
+                plotSizeResult.textContent = '--';
+                plotSizeHa.textContent = '-- hectares';
+                plotSizeM2.textContent = '-- m²';
+                plotCountResult.textContent = '-- plots';
+                plotDetails.textContent = 'Calculated based on provided plot size';
+                totalPlotAreaResult.textContent = '--';
+                totalPlotAreaHa.textContent = '-- hectares';
+                totalPlotAreaM2.textContent = '-- m²';
+                
+                // Reset rule highlighting
+                rule20.style.borderLeftColor = '#2ecc71';
+                rule20.style.backgroundColor = 'white';
+                rule30.style.borderLeftColor = '#e74c3c';
+                rule30.style.backgroundColor = 'white';
+                
+                deductionResultItem.classList.remove('warning', 'success');
+                plotVisualization.style.display = 'none';
+                grossAreaInput.focus();
+            }
+            
+            // Event listeners
+            calculateBtn.addEventListener('click', calculatePlots);
+            resetBtn.addEventListener('click', resetCalculator);
+            
+            grossAreaInput.addEventListener('input', updateLandAreaConversion);
+            plotSizeInput.addEventListener('input', updatePlotSizeConversion);
+            
+            // Allow Enter key to trigger calculation
+            grossAreaInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') calculatePlots();
+            });
+            
+            plotSizeInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') calculatePlots();
+            });
+            
+            // Initialize
+            initUnitSelectors();
+            
+            // Add sample data for demonstration
+            grossAreaInput.value = "5";
+            plotSizeInput.value = "500";
+            updateLandAreaConversion();
+            updatePlotSizeConversion();
+        });
+    </script>
+</body>
+</html>
+```
+
+## Key Features of this Calculator:
+
+### **1. Flexible Unit Inputs:**
+- **Land Area**: Can be entered in hectares, acres, or square meters
+- **Plot Size**: Can be entered in hectares, acres, or square meters (default: m²)
+- **Automatic Conversions**: All values converted to hectares for calculation
+
+### **2. Smart Calculation Logic:**
+- **Dynamic Deduction**: 20% for ≤4ha, 30% for >4ha
+- **Plot Calculation**: `Number of Plots = Floor(Net Area ÷ Plot Size in hectares)`
+- **Equal Distribution**: All net area is distributed equally among plots
+
+### **3. User-Friendly Features:**
+- **Common Plot Sizes**: Quick-select buttons for standard plot sizes (100m², 200m², 500m², 1000m², 2000m², 1 acre)
+- **Real-time Conversion**: Shows equivalent values in all units as you type
+- **Visual Feedback**: Highlights the applicable deduction rule based on input
+
+### **4. Comprehensive Results Display:**
+- Shows values in both hectares and square meters
+- Clear breakdown of:
+  - Gross land area
+  - Utility deduction applied
+  - Net available area
+  - Individual plot size
+  - **Number of plots** (main output)
+  - Total plot area
+
+### **5. Example Calculation:**
+
+**Input:**
+- Gross Area: 5 hectares (or 50,000 m²)
+- Plot Size: 500 m²
+
+**Calculation:**
+1. Convert plot size: 500 m² = 0.05 hectares
+2. Utility deduction: 30% of 5ha = 1.5ha (since >4ha)
+3. Net area: 5ha - 1.5ha = 3.5ha = 35,000 m²
+4. Number of plots: Floor(3.5 ÷ 0.05) = 70 plots
+5. Each plot: 500 m² exactly
+6. Total plot area: 70 × 500 = 35,000 m² = 3.5ha
+
+### **6. Visualization:**
+- Shows proportion of land used for utilities vs. plots
+- Color-coded for easy understanding
+
+This calculator is specifically designed to answer the question: **"Given a plot size in square meters, how many equal plots can I create from my land after utility deductions?"**
